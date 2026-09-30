@@ -62,11 +62,17 @@
 
     /* Smooth Dynamic Zoom Stage */
     .wheel-stage {
-      transition: transform 1.2s cubic-bezier(0.25, 1, 0.5, 1);
-      transform-origin: center top;
+      transition: transform 1.5s cubic-bezier(0.25, 1, 0.5, 1);
+      transform-origin: center 10%;
     }
     .wheel-stage.zoomed {
-      transform: scale(1.35) translateY(35px);
+      transform: scale(1.4) translateY(30px);
+    }
+
+    /* Wheel Transition */
+    #wheelSvg {
+      transform-origin: center center;
+      will-change: transform;
     }
 
     .modal-pop {
@@ -148,7 +154,7 @@
 
           <!-- SVG Wheel Canvas -->
           <div class="w-full h-full rounded-full bg-slate-950/90 shadow-2xl relative overflow-hidden flex items-center justify-center border border-white/10">
-            <svg id="wheelSvg" viewBox="0 0 1000 1000" class="w-full h-full transform origin-center">
+            <svg id="wheelSvg" viewBox="0 0 1000 1000" class="w-full h-full">
               <!-- Slices rendered by JS -->
             </svg>
           </div>
@@ -251,7 +257,7 @@
   </div>
 
   <script>
-    // Frosted Prism Neon Palette
+    // Frosted Prism Palette
     const sliceColors = [
       '#06b6d4', '#ec4899', '#3b82f6', '#10b981', '#f59e0b', 
       '#8b5cf6', '#f43f5e', '#14b8a6', '#6366f1', '#a855f7',
@@ -326,7 +332,7 @@
         path.onclick = () => openEditModal(i);
         svg.appendChild(path);
 
-        // Radial Text (Outer Rim to Center)
+        // Radial Text
         const midAngle = startAngle + anglePerSlice / 2;
         const labelText = segmentValues[i] || `${i + 1}`;
 
@@ -447,30 +453,38 @@
 
       const spinBtn = document.getElementById('spinBtn');
       const stage = document.getElementById('wheelStage');
+      const svg = document.getElementById('wheelSvg');
       
       spinBtn.disabled = true;
       spinBtn.classList.add('opacity-50', 'cursor-not-allowed');
 
-      // Trigger Camera Zoom
+      // Zoom in
       stage.classList.add('zoomed');
 
       const numSlices = segmentCount;
       const winnerIndex = Math.floor(Math.random() * numSlices);
       const anglePerSlice = 360 / numSlices;
 
+      // Position winner directly under pointer (0 deg top)
       const sliceCenterAngle = (winnerIndex * anglePerSlice) + (anglePerSlice / 2);
       const targetAngle = 360 - sliceCenterAngle;
       
-      // GUARANTEED MINIMUM 10 ROTATIONS (3600 deg) + Extra Random Spin Range
-      const minimumRotations = 10 * 360; 
-      const bonusRotations = Math.floor(Math.random() * 3) * 360; // 0 to 2 extra spins
-      const totalRotationNeeded = currentRotation + minimumRotations + bonusRotations + (targetAngle - (currentRotation % 360) + 360) % 360;
+      // GUARANTEED MINIMUM 8 FULL ROTATIONS (2880 deg) + Extra spins + exact landing angle
+      const fullRotations = 8 * 360; 
+      const bonusSpins = Math.floor(Math.random() * 3) * 360; 
+      const targetRotation = currentRotation + fullRotations + bonusSpins + ((targetAngle - (currentRotation % 360) + 360) % 360);
 
-      currentRotation = totalRotationNeeded;
+      currentRotation = targetRotation;
 
-      // Heavy Custom Easing: Fast hyper-spins then dramatic slow-motion creep at end
-      const svg = document.getElementById('wheelSvg');
-      svg.style.transition = 'transform 9s cubic-bezier(0.08, 0.85, 0.05, 1)';
+      // Reset transition to ensure browser registers animation
+      svg.style.transition = 'none';
+      svg.style.transform = `rotate(${currentRotation - (fullRotations + bonusSpins)}deg)`;
+      
+      // Force Reflow
+      void svg.offsetHeight;
+
+      // Apply 8-Second Easing Animation (Fast -> Dramatic Slow Crawl)
+      svg.style.transition = 'transform 8s cubic-bezier(0.1, 0.9, 0.05, 1)';
       svg.style.transform = `rotate(${currentRotation}deg)`;
 
       setTimeout(() => {
@@ -480,7 +494,7 @@
 
         const winnerName = segmentValues[winnerIndex];
         triggerCelebration(winnerName);
-      }, 9200);
+      }, 8200);
     }
 
     function triggerCelebration(winnerName) {
