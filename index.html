@@ -3,203 +3,253 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Custom Wheel Spinner</title>
+  <title>Pro Wheel Spinner</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;800;900&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@700;900&family=Outfit:wght@400;600;800;900&display=swap');
+    
     body {
       font-family: 'Outfit', sans-serif;
-      background: radial-gradient(circle at center, #1e1b4b 0%, #0f172a 100%);
+      background: radial-gradient(circle at center, #111827 0%, #030712 100%);
     }
-    
-    /* Glowing Effects */
-    .glow-pointer {
-      filter: drop-shadow(0px 4px 10px rgba(239, 68, 68, 0.8));
+
+    /* Metallic Chrome Rim */
+    .chrome-rim {
+      background: conic-gradient(
+        #d1d5db, #374151, #f3f4f6, #1f2937, 
+        #e5e7eb, #4b5563, #f9fafb, #d1d5db
+      );
+      box-shadow: 0 0 35px rgba(0,0,0,0.9), inset 0 0 15px rgba(0,0,0,0.8);
     }
-    .glow-wheel {
-      box-shadow: 0 0 50px rgba(124, 58, 237, 0.3), inset 0 0 20px rgba(0, 0, 0, 0.5);
+
+    /* Polished Brass Center Hub */
+    .brass-hub {
+      background: radial-gradient(circle, #fef08a 0%, #ca8a04 70%, #713f12 100%);
+      box-shadow: 0 4px 20px rgba(0,0,0,0.8), inset 0 2px 4px rgba(255,255,255,0.6);
     }
-    
-    /* Segment Text Styling */
-    .wheel-text {
-      font-weight: 800;
-      fill: #ffffff;
-      text-anchor: middle;
-      dominant-baseline: central;
-      font-size: 16px;
-      text-shadow: 0px 2px 4px rgba(0,0,0,0.8);
-      user-select: none;
-      pointer-events: none;
+
+    .pointer-shadow {
+      filter: drop-shadow(0px 6px 12px rgba(0, 0, 0, 0.9));
     }
-    
+
+    /* Slice & Text Styling */
     .slice-path {
-      transition: opacity 0.2s ease, filter 0.2s ease;
+      transition: filter 0.2s ease;
       cursor: pointer;
     }
     .slice-path:hover {
-      filter: brightness(1.15);
+      filter: brightness(1.25);
     }
 
-    /* Modal Animation */
-    .modal-animate {
-      animation: popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+    .wheel-text {
+      font-weight: 800;
+      fill: #ffffff;
+      dominant-baseline: central;
+      text-shadow: 0px 1px 3px rgba(0, 0, 0, 0.9);
+      user-select: none;
+      pointer-events: none;
+    }
+
+    .modal-pop {
+      animation: popIn 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
     }
     @keyframes popIn {
-      0% { transform: scale(0.5); opacity: 0; }
+      0% { transform: scale(0.6); opacity: 0; }
       100% { transform: scale(1); opacity: 1; }
     }
   </style>
 </head>
 <body class="min-h-screen text-slate-100 flex flex-col items-center justify-between p-4 sm:p-6">
 
-  <!-- TOP HEADER -->
+  <!-- HEADER -->
   <header class="w-full max-w-2xl flex justify-between items-center py-2 border-b border-slate-800">
-    <div class="flex items-center space-x-2">
-      <div class="bg-indigo-600 p-2 rounded-xl text-xl text-white shadow-lg shadow-indigo-500/30">
+    <div class="flex items-center space-x-2.5">
+      <div class="bg-gradient-to-tr from-amber-500 to-yellow-300 p-2 rounded-xl text-slate-950 text-xl font-black shadow-lg shadow-amber-500/20">
         <i class="fa-solid fa-dharmachakra"></i>
       </div>
-      <h1 class="text-xl font-extrabold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-indigo-400 via-purple-300 to-pink-400">
-        SpinWheel Studio
-      </h1>
+      <div>
+        <h1 class="text-xl font-black tracking-tight text-white uppercase">
+          PRO SPINNER
+        </h1>
+        <p class="text-[10px] text-slate-400 font-semibold tracking-widest uppercase">Precision Wheel Studio</p>
+      </div>
     </div>
-    <button onclick="resetSetup()" class="bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white px-3 py-1.5 rounded-xl text-xs font-semibold border border-slate-700 transition flex items-center gap-1.5">
-      <i class="fa-solid fa-plus"></i> New Wheel
+    <button onclick="resetSetup()" class="bg-slate-900 hover:bg-slate-800 text-slate-300 hover:text-white px-3.5 py-2 rounded-xl text-xs font-bold border border-slate-700 transition flex items-center gap-1.5 shadow-md">
+      <i class="fa-solid fa-plus text-amber-400"></i> New Wheel
     </button>
   </header>
 
   <!-- MAIN CONTAINER -->
-  <main class="w-full max-w-md my-auto flex flex-col items-center py-6 space-y-6">
+  <main class="w-full max-w-lg my-auto flex flex-col items-center py-4 space-y-6">
 
     <!-- STEP 1: INITIAL SETUP CARD -->
-    <div id="setupCard" class="w-full bg-slate-900/80 backdrop-blur-md border border-slate-800 rounded-3xl p-6 shadow-2xl space-y-5 text-center">
+    <div id="setupCard" class="w-full bg-slate-900/90 border border-slate-800 rounded-3xl p-6 shadow-2xl space-y-6 text-center">
       <div class="space-y-1">
-        <h2 class="text-2xl font-black text-white">Create Your Wheel</h2>
-        <p class="text-xs text-slate-400">Select how many segments you want on your wheel</p>
+        <h2 class="text-2xl font-black text-white uppercase tracking-wide">Configure Segments</h2>
+        <p class="text-xs text-slate-400">Select the number of segments on your wheel (Up to 100)</p>
       </div>
 
-      <div class="space-y-3">
-        <div class="flex justify-center items-center space-x-4">
-          <button onclick="adjustSegmentCount(-1)" class="w-12 h-12 bg-slate-800 hover:bg-slate-700 rounded-2xl border border-slate-700 text-xl font-bold flex items-center justify-center transition active:scale-95">-</button>
-          <span id="segmentCountDisplay" class="text-4xl font-black text-indigo-400 font-mono w-16 text-center">6</span>
-          <button onclick="adjustSegmentCount(1)" class="w-12 h-12 bg-slate-800 hover:bg-slate-700 rounded-2xl border border-slate-700 text-xl font-bold flex items-center justify-center transition active:scale-95">+</button>
+      <!-- Segment Counter Input -->
+      <div class="space-y-3 bg-slate-950/60 p-4 rounded-2xl border border-slate-800/80">
+        <div class="flex justify-center items-center space-x-3">
+          <button onclick="adjustSegmentCount(-5)" class="w-10 h-10 bg-slate-800 hover:bg-slate-700 rounded-xl border border-slate-700 text-sm font-extrabold flex items-center justify-center transition active:scale-95">-5</button>
+          <button onclick="adjustSegmentCount(-1)" class="w-10 h-10 bg-slate-800 hover:bg-slate-700 rounded-xl border border-slate-700 text-base font-extrabold flex items-center justify-center transition active:scale-95">-1</button>
+          
+          <input type="number" id="segmentInput" value="12" min="2" max="100" onchange="setDirectSegmentCount(this.value)"
+            class="text-3xl font-black text-amber-400 font-mono w-20 text-center bg-transparent border-b-2 border-amber-500/50 focus:outline-none focus:border-amber-400">
+          
+          <button onclick="adjustSegmentCount(1)" class="w-10 h-10 bg-slate-800 hover:bg-slate-700 rounded-xl border border-slate-700 text-base font-extrabold flex items-center justify-center transition active:scale-95">+1</button>
+          <button onclick="adjustSegmentCount(5)" class="w-10 h-10 bg-slate-800 hover:bg-slate-700 rounded-xl border border-slate-700 text-sm font-extrabold flex items-center justify-center transition active:scale-95">+5</button>
         </div>
-        <p class="text-[11px] text-slate-500">Choose between 2 and 20 segments</p>
+        <p class="text-[11px] text-slate-500 font-semibold">Supports 2 to 100 segments</p>
       </div>
 
-      <button onclick="createWheel()" class="w-full bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-extrabold py-3.5 rounded-2xl shadow-xl shadow-indigo-600/30 text-sm uppercase tracking-wider transition active:scale-95">
-        Create Wheel
+      <button onclick="createWheel()" class="w-full bg-gradient-to-r from-amber-500 via-amber-600 to-yellow-600 hover:from-amber-400 hover:to-yellow-500 text-slate-950 font-black py-4 rounded-2xl shadow-xl shadow-amber-500/20 text-xs uppercase tracking-widest transition active:scale-95">
+        Create Precision Wheel
       </button>
     </div>
 
-    <!-- STEP 2: WHEEL DISPLAY & INTERACTION -->
+    <!-- STEP 2: WHEEL DISPLAY & EDITING -->
     <div id="wheelContainer" class="w-full hidden flex flex-col items-center space-y-6">
       
-      <!-- WHEEL GRAPHIC AREA -->
+      <!-- REALISTIC WHEEL GRAPHIC -->
       <div class="relative w-80 h-80 sm:w-96 sm:h-96 flex items-center justify-center">
-        <!-- Pointer Arrow -->
-        <div class="absolute -top-3 z-30 glow-pointer">
-          <div class="w-0 h-0 border-l-[16px] border-l-transparent border-r-[16px] border-r-transparent border-t-[28px] border-t-red-500"></div>
+        <!-- Pointer Marker -->
+        <div class="absolute -top-4 z-30 pointer-shadow">
+          <div class="w-0 h-0 border-l-[18px] border-l-transparent border-r-[18px] border-r-transparent border-t-[32px] border-t-amber-400"></div>
+          <div class="w-0 h-0 border-l-[12px] border-l-transparent border-r-[12px] border-r-transparent border-t-[22px] border-t-red-600 -mt-[30px] mx-auto"></div>
         </div>
 
-        <!-- SVG Wheel -->
-        <div class="w-full h-full rounded-full border-4 border-slate-800 glow-wheel relative overflow-hidden bg-slate-900">
-          <svg id="wheelSvg" viewBox="0 0 500 500" class="w-full h-full transform origin-center">
-            <!-- Slices populated via JS -->
-          </svg>
+        <!-- Chrome Outer Rim -->
+        <div class="w-full h-full rounded-full p-3.5 chrome-rim relative flex items-center justify-center">
+          <!-- Inner Dark Bezel -->
+          <div class="w-full h-full rounded-full bg-slate-950 p-1.5 shadow-inner relative overflow-hidden flex items-center justify-center border border-slate-800">
+            <!-- SVG Wheel Engine -->
+            <svg id="wheelSvg" viewBox="0 0 1000 1000" class="w-full h-full transform origin-center">
+              <!-- Slices dynamically rendered in JS -->
+            </svg>
+          </div>
         </div>
 
-        <!-- Center Hub -->
-        <div class="absolute w-16 h-16 bg-slate-900 border-4 border-slate-700 rounded-full shadow-2xl flex items-center justify-center z-20 pointer-events-none">
-          <i class="fa-solid fa-star text-amber-400 text-lg"></i>
+        <!-- Brass Center Hub -->
+        <div class="absolute w-16 h-16 sm:w-20 sm:h-20 rounded-full brass-hub border-2 border-yellow-200/80 flex items-center justify-center z-20 pointer-events-none">
+          <div class="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-slate-950 border border-yellow-500/50 flex items-center justify-center">
+            <i class="fa-solid fa-gem text-amber-400 text-xs sm:text-sm"></i>
+          </div>
         </div>
       </div>
 
-      <!-- STATUS & SPIN BUTTON -->
+      <!-- STATUS & ACTIONS -->
       <div class="w-full flex flex-col items-center space-y-3">
-        <div id="fillStatus" class="text-xs font-semibold text-amber-400 bg-amber-400/10 px-3 py-1.5 rounded-full border border-amber-400/20 flex items-center gap-1.5">
-          <i class="fa-solid fa-triangle-exclamation"></i>
-          <span>Click segments below or on the wheel to fill all names!</span>
+        <div id="fillStatus" class="text-xs font-semibold text-amber-400 bg-amber-400/10 px-4 py-2 rounded-xl border border-amber-400/20 flex items-center gap-2">
+          <i class="fa-solid fa-triangle-exclamation text-amber-400"></i>
+          <span>Fill all segment names to unlock SPIN!</span>
         </div>
 
-        <!-- Spin Button (Hidden until fully filled) -->
-        <button id="spinBtn" onclick="spinWheel()" class="hidden w-full bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-white font-black py-4 rounded-2xl shadow-2xl shadow-emerald-500/30 text-base uppercase tracking-widest transition transform active:scale-95 flex items-center justify-center gap-2">
-          <i class="fa-solid fa-play"></i> SPIN THE WHEEL!
+        <!-- Spin Button -->
+        <button id="spinBtn" onclick="spinWheel()" class="hidden w-full bg-gradient-to-r from-emerald-500 via-teal-500 to-emerald-600 hover:from-emerald-400 hover:to-teal-400 text-slate-950 font-black py-4 rounded-2xl shadow-2xl shadow-emerald-500/30 text-base uppercase tracking-widest transition transform active:scale-95 flex items-center justify-center gap-2 border border-emerald-300/40">
+          <i class="fa-solid fa-play"></i> SPIN WHEEL
         </button>
       </div>
 
-      <!-- SEGMENTS EDITING LIST -->
-      <div class="w-full bg-slate-900/60 border border-slate-800 rounded-3xl p-4 space-y-3">
-        <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider px-1">Segment Labels</h3>
-        <div id="segmentInputsList" class="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-48 overflow-y-auto pr-1">
-          <!-- Input fields populated via JS -->
+      <!-- SEGMENTS MANAGEMENT LIST -->
+      <div class="w-full bg-slate-900/80 border border-slate-800 rounded-3xl p-4 space-y-3 shadow-xl">
+        <div class="flex justify-between items-center px-1">
+          <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider">Segments Editor</h3>
+          <button onclick="openBulkModal()" class="text-[11px] font-bold text-amber-400 hover:underline flex items-center gap-1">
+            <i class="fa-solid fa-file-import"></i> Bulk Paste Names
+          </button>
+        </div>
+
+        <div id="segmentInputsList" class="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-52 overflow-y-auto pr-1">
+          <!-- Populated by JS -->
         </div>
       </div>
 
     </div>
   </main>
 
-  <!-- EDIT SEGMENT MODAL -->
-  <div id="editModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
-    <div class="bg-slate-900 border border-slate-800 max-w-sm w-full rounded-3xl p-6 space-y-4 shadow-2xl modal-animate">
+  <!-- BULK PASTE MODAL -->
+  <div id="bulkModal" class="fixed inset-0 bg-slate-950/85 backdrop-blur-md z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-slate-900 border border-slate-800 max-w-md w-full rounded-3xl p-6 space-y-4 shadow-2xl modal-pop">
       <div class="flex justify-between items-center border-b border-slate-800 pb-3">
-        <h3 class="font-extrabold text-white text-base">Edit Segment <span id="modalSegmentNum" class="text-indigo-400">#1</span></h3>
-        <button onclick="closeEditModal()" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark text-lg"></i></button>
+        <h3 class="font-black text-white text-base">Bulk Paste Segment Names</h3>
+        <button onclick="closeBulkModal()" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark text-lg"></i></button>
       </div>
 
       <div>
-        <label class="block text-xs font-bold text-slate-400 mb-1">Enter Name / Word</label>
-        <input type="text" id="modalInput" placeholder="e.g. Winner, Option A, Prize..." class="w-full bg-slate-800 border border-slate-700 rounded-xl p-3 text-sm text-white focus:outline-none focus:border-indigo-500">
+        <p class="text-xs text-slate-400 mb-2">Paste names separated by commas or new lines. (Will populate up to current segment count)</p>
+        <textarea id="bulkTextarea" rows="6" placeholder="Alice&#10;Bob&#10;Charlie&#10;David..." class="w-full bg-slate-950 border border-slate-800 rounded-2xl p-3 text-xs text-white focus:outline-none focus:border-amber-500 font-mono"></textarea>
       </div>
 
       <div class="flex gap-2">
-        <button onclick="closeEditModal()" class="w-1/2 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold py-2.5 rounded-xl text-xs transition">Cancel</button>
-        <button onclick="saveModalInput()" class="w-1/2 bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-2.5 rounded-xl text-xs transition shadow-lg shadow-indigo-600/30">Save Label</button>
+        <button onclick="closeBulkModal()" class="w-1/2 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold py-2.5 rounded-xl text-xs">Cancel</button>
+        <button onclick="applyBulkNames()" class="w-1/2 bg-amber-500 hover:bg-amber-400 text-slate-950 font-black py-2.5 rounded-xl text-xs uppercase tracking-wider">Apply Names</button>
       </div>
     </div>
   </div>
 
-  <!-- WINNER CELEBRATION MODAL -->
-  <div id="winnerModal" class="fixed inset-0 bg-slate-950/85 backdrop-blur-md z-50 hidden flex items-center justify-center p-4">
-    <div class="bg-slate-900 border border-amber-500/40 max-w-sm w-full rounded-3xl p-6 space-y-5 text-center shadow-2xl modal-animate">
+  <!-- EDIT SINGLE SEGMENT MODAL -->
+  <div id="editModal" class="fixed inset-0 bg-slate-950/85 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-slate-900 border border-slate-800 max-w-sm w-full rounded-3xl p-6 space-y-4 shadow-2xl modal-pop">
+      <div class="flex justify-between items-center border-b border-slate-800 pb-3">
+        <h3 class="font-extrabold text-white text-base">Edit Segment <span id="modalSegmentNum" class="text-amber-400">#1</span></h3>
+        <button onclick="closeEditModal()" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark text-lg"></i></button>
+      </div>
+
+      <div>
+        <label class="block text-xs font-bold text-slate-400 mb-1">Segment Label</label>
+        <input type="text" id="modalInput" placeholder="e.g. Prize Name..." class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-sm text-white focus:outline-none focus:border-amber-500">
+      </div>
+
+      <div class="flex gap-2">
+        <button onclick="closeEditModal()" class="w-1/2 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold py-2.5 rounded-xl text-xs">Cancel</button>
+        <button onclick="saveModalInput()" class="w-1/2 bg-amber-500 hover:bg-amber-400 text-slate-950 font-black py-2.5 rounded-xl text-xs uppercase">Save Label</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- WINNER MODAL -->
+  <div id="winnerModal" class="fixed inset-0 bg-slate-950/90 backdrop-blur-md z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-slate-900 border border-amber-500/50 max-w-sm w-full rounded-3xl p-6 space-y-5 text-center shadow-2xl modal-pop">
       <div class="inline-flex bg-amber-500/10 border border-amber-500/30 p-4 rounded-full text-4xl text-amber-400">
         <i class="fa-solid fa-trophy animate-bounce"></i>
       </div>
 
       <div class="space-y-1">
-        <span class="text-xs font-extrabold uppercase tracking-widest text-amber-400">We Have A Winner!</span>
+        <span class="text-[11px] font-black uppercase tracking-widest text-amber-400">WINNING SEGMENT</span>
         <h2 id="winnerNameDisplay" class="text-3xl font-black text-white break-words">---</h2>
       </div>
 
-      <button onclick="closeWinnerModal()" class="w-full bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-slate-950 font-black py-3.5 rounded-2xl shadow-xl shadow-amber-500/20 text-xs uppercase tracking-wider transition active:scale-95">
-        Awesome!
+      <button onclick="closeWinnerModal()" class="w-full bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-400 hover:to-yellow-400 text-slate-950 font-black py-3.5 rounded-2xl text-xs uppercase tracking-wider">
+        Collect / Continue
       </button>
     </div>
   </div>
 
-  <!-- FOOTER -->
-  <footer class="text-center text-[11px] text-slate-500 py-2">
-    SpinWheel Studio &bull; Custom Interactive Wheel
-  </footer>
-
   <script>
-    // Color Palette Generator
+    // Rich Color Palette for High-Contrast Segments
     const sliceColors = [
-      '#6366f1', '#ec4899', '#8b5cf6', '#10b981', 
-      '#f59e0b', '#06b6d4', '#f43f5e', '#3b82f6',
-      '#a855f7', '#84cc16', '#eab308', '#14b8a6'
+      '#dc2626', '#2563eb', '#059669', '#d97706', '#7c3aed', 
+      '#db2777', '#0284c7', '#65a30d', '#ea580c', '#9333ea',
+      '#0891b2', '#c026d3', '#16a34a', '#b45309', '#4f46e5'
     ];
 
-    let segmentCount = 6;
+    let segmentCount = 12;
     let segmentValues = [];
     let activeEditIndex = null;
     let isSpinning = false;
     let currentRotation = 0;
 
     function adjustSegmentCount(delta) {
-      segmentCount = Math.max(2, Math.min(20, segmentCount + delta));
-      document.getElementById('segmentCountDisplay').innerText = segmentCount;
+      setDirectSegmentCount(segmentCount + delta);
+    }
+
+    function setDirectSegmentCount(val) {
+      segmentCount = Math.max(2, Math.min(100, parseInt(val) || 2));
+      document.getElementById('segmentInput').value = segmentCount;
     }
 
     function resetSetup() {
@@ -221,14 +271,20 @@
     function renderWheel() {
       const svg = document.getElementById('wheelSvg');
       svg.innerHTML = '';
-      
+
       const numSlices = segmentCount;
       const anglePerSlice = 360 / numSlices;
-      const radius = 250;
-      const center = 250;
+      const radius = 500;
+      const center = 500;
+
+      // Font size scales dynamically depending on slice density
+      let fontSize = 28;
+      if (numSlices > 20) fontSize = 20;
+      if (numSlices > 40) fontSize = 14;
+      if (numSlices > 70) fontSize = 10;
 
       for (let i = 0; i < numSlices; i++) {
-        const startAngle = i * anglePerSlice - 90; // Start at top
+        const startAngle = i * anglePerSlice - 90; // Start top center
         const endAngle = startAngle + anglePerSlice;
 
         const x1 = center + radius * Math.cos(Math.PI * startAngle / 180);
@@ -238,7 +294,6 @@
 
         const largeArc = anglePerSlice > 180 ? 1 : 0;
         const pathData = `M ${center} ${center} L ${x1} ${y1} A ${radius} ${radius} 0 ${largeArc} 1 ${x2} ${y2} Z`;
-
         const color = sliceColors[i % sliceColors.length];
 
         // Slice Path
@@ -246,26 +301,36 @@
         path.setAttribute('d', pathData);
         path.setAttribute('fill', color);
         path.setAttribute('class', 'slice-path');
-        path.setAttribute('stroke', '#0f172a');
-        path.setAttribute('stroke-width', '3');
+        path.setAttribute('stroke', '#030712');
+        path.setAttribute('stroke-width', numSlices > 50 ? '1' : '3');
         path.onclick = () => openEditModal(i);
         svg.appendChild(path);
 
-        // Text Arc Placement
-        const textAngle = startAngle + anglePerSlice / 2;
-        const textRadius = radius * 0.65;
-        const textX = center + textRadius * Math.cos(Math.PI * textAngle / 180);
-        const textY = center + textRadius * Math.sin(Math.PI * textAngle / 180);
+        // RADIAL TEXT (Starting near outer edge & reading inward toward center)
+        const midAngle = startAngle + anglePerSlice / 2;
+        const labelText = segmentValues[i] || `${i + 1}`;
+
+        // Outer start radius for text
+        const textRadius = radius * 0.90; 
+        const textX = center + textRadius * Math.cos(Math.PI * midAngle / 180);
+        const textY = center + textRadius * Math.sin(Math.PI * midAngle / 180);
 
         const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
         text.setAttribute('x', textX);
         text.setAttribute('y', textY);
         text.setAttribute('class', 'wheel-text');
-        text.setAttribute('transform', `rotate(${textAngle + 90}, ${textX}, ${textY})`);
-        
-        // Truncate long text for rendering inside wheel
-        const labelText = segmentValues[i] || `Slice ${i + 1}`;
-        text.textContent = labelText.length > 10 ? labelText.substring(0, 9) + '…' : labelText;
+        text.setAttribute('font-size', `${fontSize}px`);
+        text.setAttribute('text-anchor', 'start'); // Text starts outer edge and flows inward
+
+        // Rotate text along slice radius
+        text.setAttribute('transform', `rotate(${midAngle + 180}, ${textX}, ${textY})`);
+
+        // Character limit based on density
+        let maxChars = 18;
+        if (numSlices > 30) maxChars = 12;
+        if (numSlices > 60) maxChars = 8;
+
+        text.textContent = labelText.length > maxChars ? labelText.substring(0, maxChars - 1) + '…' : labelText;
         if (!segmentValues[i]) text.setAttribute('opacity', '0.4');
 
         svg.appendChild(text);
@@ -281,11 +346,12 @@
         const val = segmentValues[i] || '';
 
         const item = document.createElement('div');
-        item.className = 'flex items-center gap-2 bg-slate-800/80 p-2 rounded-xl border border-slate-700/60';
+        item.className = 'flex items-center gap-2 bg-slate-950 p-2 rounded-xl border border-slate-800';
         item.innerHTML = `
-          <div class="w-3.5 h-3.5 rounded-full flex-shrink-0" style="background-color: ${color}"></div>
+          <div class="w-3 h-3 rounded-full flex-shrink-0" style="background-color: ${color}"></div>
+          <span class="text-[10px] text-slate-500 font-mono w-5">#${i + 1}</span>
           <input type="text" value="${val}" placeholder="Segment ${i + 1}" oninput="updateSegmentValue(${i}, this.value)" 
-            class="w-full bg-transparent text-xs text-white placeholder-slate-500 focus:outline-none font-semibold">
+            class="w-full bg-transparent text-xs text-white placeholder-slate-600 focus:outline-none font-semibold">
         `;
         list.appendChild(item);
       }
@@ -295,6 +361,30 @@
       segmentValues[index] = val;
       renderWheel();
       checkCompletion();
+    }
+
+    function openBulkModal() {
+      if (isSpinning) return;
+      document.getElementById('bulkTextarea').value = segmentValues.filter(v => v).join('\n');
+      document.getElementById('bulkModal').classList.remove('hidden');
+    }
+
+    function closeBulkModal() {
+      document.getElementById('bulkModal').classList.add('hidden');
+    }
+
+    function applyBulkNames() {
+      const raw = document.getElementById('bulkTextarea').value;
+      const names = raw.split(/[\n,]+/).map(n => n.trim()).filter(n => n.length > 0);
+
+      for (let i = 0; i < segmentCount; i++) {
+        segmentValues[i] = names[i] || '';
+      }
+
+      renderWheel();
+      renderInputsList();
+      checkCompletion();
+      closeBulkModal();
     }
 
     function openEditModal(index) {
@@ -342,26 +432,22 @@
       spinBtn.disabled = true;
       spinBtn.classList.add('opacity-50', 'cursor-not-allowed');
 
-      // Calculate Random Winner Slice
       const numSlices = segmentCount;
       const winnerIndex = Math.floor(Math.random() * numSlices);
       const anglePerSlice = 360 / numSlices;
 
-      // Calculate rotational offset so chosen segment lands under top pointer (0deg / 360deg)
       const sliceCenterAngle = (winnerIndex * anglePerSlice) + (anglePerSlice / 2);
       const targetAngle = 360 - sliceCenterAngle;
       
-      // Add multiple full rotations (5-8 full spins)
-      const extraSpins = (5 + Math.floor(Math.random() * 3)) * 360;
+      const extraSpins = (6 + Math.floor(Math.random() * 3)) * 360;
       const totalRotationNeeded = currentRotation + extraSpins + (targetAngle - (currentRotation % 360) + 360) % 360;
 
       currentRotation = totalRotationNeeded;
 
       const svg = document.getElementById('wheelSvg');
-      svg.style.transition = 'transform 5s cubic-bezier(0.15, 0.9, 0.2, 1)';
+      svg.style.transition = 'transform 6s cubic-bezier(0.12, 0.8, 0.15, 1)';
       svg.style.transform = `rotate(${currentRotation}deg)`;
 
-      // Handle Completion
       setTimeout(() => {
         isSpinning = false;
         spinBtn.disabled = false;
@@ -369,14 +455,13 @@
 
         const winnerName = segmentValues[winnerIndex];
         triggerCelebration(winnerName);
-      }, 5000);
+      }, 6000);
     }
 
     function triggerCelebration(winnerName) {
-      // Confetti burst
       confetti({
-        particleCount: 120,
-        spread: 80,
+        particleCount: 150,
+        spread: 90,
         origin: { y: 0.6 }
       });
 
